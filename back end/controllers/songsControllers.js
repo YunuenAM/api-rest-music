@@ -1,9 +1,13 @@
-const asycHandler = require ('express-async-handler')
+const asycHandler = require ('express-async-handler');
+const Song = require('../models/songsModel')
 const fs = require ('fs')
 
 const getSongs = asycHandler(async (req,res) => {
-    res.status(200).json({message: 'To get songs'})
-})
+
+    const songs = await Song.find()
+
+    res.status(200).json({songs})
+});
 
 
 const setSong = asycHandler( async (req,res) => {
@@ -12,19 +16,27 @@ const setSong = asycHandler( async (req,res) => {
     if (!uploadedFile){
       throw new Error({message:'No file uploaded'})
     }
-
-    res.status(201).json(
-        {message: 'Song created successfully',
-        file: uploadedFile.filename,
+     const song = await Song.create({
+        text: req.body.text,
+     })
+    
+    res.status(201).json(song)
+        
     });
-})
 
 const updateSong = asycHandler( async (req,res) => {
-    res.status(200).json({message: `To edit song ${req.params.id}`})
+
+    const song = await Song.findById(req.params.id);
+    if (!song) {
+        res.status(404)
+        throw new Error('The file was not found')
+    }
+    const updatedSong = await Song.findByIdAndUpdate(req.params.id, req.body, {new:true})
+    res.status(200).json(updatedSong)
 })
 
 const deleteSong = asycHandler( async (req,res) => {
-    const songId = require.params.id;
+    const songId = await Song.findById(require.params.id)
 
     const fileName = getFileNameFromDatabase(songId);
     //Delete the physical file
@@ -37,8 +49,10 @@ const deleteSong = asycHandler( async (req,res) => {
             console.log('File deleted successfully')
         }
     });
+    
+    await song.deleteOne()
     //You can remove the song entry form the database
-    res.status(200).json({message: `Song deleted successfully`})
+    res.status(200).json({id: song._id})
 })
 
 module.exports = {
