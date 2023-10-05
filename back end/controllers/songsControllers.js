@@ -4,7 +4,7 @@ const fs = require ('fs')
 
 const getSongs = asycHandler(async (req,res) => {
 
-    const songs = await Song.find()
+    const songs = await Song.find({user: req.user.id})
 
     res.status(200).json({songs})
 });
