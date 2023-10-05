@@ -1,19 +1,14 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const songSchema = mongoose.Schema({
 
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'User'
-    },
     text:{
         type: String,
-        required: [true, 'Please upload a file']
-
+        required:[true,"Please enter the name of the song "]
     }
-},{
+
+}, {
     timestamps: true
-});
+})
 
 module.exports = mongoose.model('Song', songSchema)

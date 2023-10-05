@@ -1,64 +1,71 @@
-const asycHandler = require ('express-async-handler');
-const Song = require('../models/songsModel')
-const fs = require ('fs')
+const asyncHandler = require('express-async-handler');
+const Song = require('../models/songsModel');
 
-const getSongs = asycHandler(async (req,res) => {
-
-    const songs = await Song.find({user: req.user.id})
-
-    res.status(200).json({songs})
+const getSongs = asyncHandler(async (req, res) => {
+    const songs = await Song.find();
+    res.status(200).json(songs);
 });
 
-
-const setSong = asycHandler( async (req,res) => {
-    //To access to file through req.file
-    const uploadedFile = req.file;
-    if (!uploadedFile){
-      throw new Error({message:'No file uploaded'})
+const setSong = asyncHandler(async (req, res) => {
+    if (!req.body.text) {
+        res.status(400);
+        throw new Error('Enter a song');
     }
-     const song = await Song.create({
+
+    // Verificar si el usuario autenticado es un administrador
+    if (req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Only admins can create songs');
+    }
+
+    const song = await Song.create({
         text: req.body.text,
-     })
-    
-    res.status(201).json(song)
-        
     });
 
-const updateSong = asycHandler( async (req,res) => {
+    res.status(201).json(song);
+});
 
+const updateSong = asyncHandler(async (req, res) => {
     const song = await Song.findById(req.params.id);
     if (!song) {
-        res.status(404)
-        throw new Error('The file was not found')
+        res.status(404);
+        throw new Error('The song was not found');
     }
-    const updatedSong = await Song.findByIdAndUpdate(req.params.id, req.body, {new:true})
-    res.status(200).json(updatedSong)
-})
 
-const deleteSong = asycHandler( async (req,res) => {
-    const songId = await Song.findById(require.params.id)
+    // Verificar si el usuario autenticado es un administrador
+    if (req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Only admins can update songs');
+    }
 
-    const fileName = getFileNameFromDatabase(songId);
-    //Delete the physical file
-
-    fs.unlink(`uploads/${fileName}`, (err)=>{
-        if (err) {
-            console.error('Error deleting file:', err);
-
-        } else{
-            console.log('File deleted successfully')
-        }
+    const updatedSong = await Song.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
     });
-    
-    await song.deleteOne()
-    //You can remove the song entry form the database
-    res.status(200).json({id: song._id})
-})
+
+    res.status(200).json(updatedSong);
+});
+
+const deleteSong = asyncHandler(async (req, res) => {
+    const song = await Song.findById(req.params.id);
+    if (!song) {
+        res.status(404);
+        throw new Error('The song was not found');
+    }
+
+    // Verificar si el usuario autenticado es un administrador
+    if (req.user.role !== 'admin') {
+        res.status(403);
+        throw new Error('Only admins can delete songs');
+    }
+
+    await song.deleteOne();
+
+    res.status(200).json({ id: song._id });
+});
 
 module.exports = {
     getSongs,
     setSong,
     updateSong,
-    deleteSong
-}
-
+    deleteSong,
+};
