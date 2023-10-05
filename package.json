@@ -4,9 +4,8 @@
   "description": "API created with Node, Express, MongoDB, Jwt, etc for a musical app like spotify",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js.",
-    "server": "nodemon index.js"
+    "start": "node index.js.",
+    "server": "nodemon  index.js"
   },
   "author": "Yunuen AM",
   "license": "MIT",
